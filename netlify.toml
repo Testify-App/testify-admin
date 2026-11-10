@@ -1,0 +1,30 @@
+# Netlify build settings for the Testify admin portal.
+# VITE_API_BASE_URL is set in the Netlify UI (Site configuration → Environment variables);
+# Vite bakes it in at build time, so redeploy after changing it.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Single-page app: serve index.html for every route so deep links (e.g. /accept-invite?token=…
+# from invitation emails, /users/:id, /moderation/:id) work on refresh and when opened directly.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Hashed build assets never change, so let browsers cache them for a year.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
